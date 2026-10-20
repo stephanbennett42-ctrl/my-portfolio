@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(1deg); /* Floats up and tilts gently */
+  }
+}
+
+.animate-heroFloat {
+  animation: heroFloat 6s ease-in-out infinite;
+}
