@@ -1,6 +1,31 @@
 import { Store, Cpu, Users, Shield, ArrowRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function App() {
+  const [aboutGlowPulse, setAboutGlowPulse] = useState(0);
+  const aboutSectionRef = useRef(null);
+
+  useEffect(() => {
+    const aboutSection = aboutSectionRef.current;
+    if (!aboutSection) return;
+
+    let wasVisible = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !wasVisible) {
+          setAboutGlowPulse((pulse) => pulse + 1);
+          wasVisible = true;
+        } else if (!entry.isIntersecting) {
+          wasVisible = false;
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    observer.observe(aboutSection);
+    return () => observer.disconnect();
+  }, []);
+
   const services = [
     {
       icon: <Store className="w-6 h-6 text-purple-400" />,
@@ -29,9 +54,17 @@ export default function App() {
       
       {/* Google Fonts - Orbitron */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Anta&family=Audiowide&family=Orbitron:wght@700;900&display=swap');
         .font-futuristic {
           font-family: 'Orbitron', sans-serif;
+        }
+        .font-logo {
+          font-family: 'Audiowide', sans-serif;
+        }
+        .font-anta {
+          font-family: 'Anta', sans-serif;
+          font-weight: 400;
+          font-style: normal;
         }
       `}</style>
 
@@ -55,7 +88,7 @@ export default function App() {
               Home
               <span className="absolute left-0 right-0 -bottom-1 h-[2.5px] bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"></span>
             </a>
-            <a href="#about" className="hover:text-white transition py-1">About</a>
+            <a href="#about" onClick={() => setAboutGlowPulse((pulse) => pulse + 1)} className="hover:text-white transition py-1">About</a>
           </div>
 
           {/* Pill Action Button */}
@@ -69,11 +102,12 @@ export default function App() {
       <section id="home" className="min-h-screen flex items-center max-w-7xl mx-auto px-8 pt-24 relative z-10">
         <div className="grid md:grid-cols-2 items-center gap-12 w-full">
           <div className="space-y-6">
-            <span className="text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">SOFTWARE DEVELOPER</span>
-            
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-none text-white font-futuristic uppercase">
-              STEPHAN BENNETT
-            </h2>
+            <div className="space-y-1">
+              <span className="text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">SOFTWARE DEVELOPER</span>
+              <h2 className="text-[clamp(1.5rem,5.2vw,3.25rem)] font-black tracking-[-0.04em] leading-none [word-spacing:0.12em] text-white font-logo uppercase">
+                STEPHAN BENNETT
+              </h2>
+            </div>
 
             <p className="text-gray-400 max-w-md text-sm leading-relaxed">
               Developing scalable web applications and digital platforms with clean architecture, modern UI performance, and innovative design.
@@ -87,12 +121,12 @@ export default function App() {
 
           {/* Right Side: Seamless Looping Video Visual */}
           <div className="relative flex justify-center items-center">
-            <video 
-              src="/ball-liquid-nobg.webm" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
+            <video
+              src="/ball-liquid-nobg.webm"
+              autoPlay
+              loop
+              muted
+              playsInline
               className="w-80 h-80 md:w-[520px] md:h-[520px] object-cover pointer-events-none drop-shadow-[0_0_60px_rgba(168,85,247,0.4)]"
             />
           </div>
@@ -100,23 +134,21 @@ export default function App() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-28 max-w-7xl mx-auto px-8 relative z-10">
+      <section ref={aboutSectionRef} id="about" className="py-28 max-w-7xl mx-auto px-8 relative z-10">
         <div className="grid md:grid-cols-2 items-center gap-16">
-          <div className="relative flex justify-center items-center order-2 md:order-1">
-            <div className="w-72 h-72 md:w-[380px] md:h-[380px] animate-morph transition-all duration-700" />
+          <div className="about-portrait-frame w-72 h-96 md:w-[420px] md:h-[540px] order-2 md:order-1 md:translate-x-12 animate-heroFloat">
+            <img
+              src="/stephan-bennett.png"
+              alt="Portrait of Stephan Bennett"
+              className="about-portrait-image"
+            />
           </div>
 
-          <div className="space-y-6 order-1 md:order-2">
-            <span className="text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">WHO I AM</span>
-            <h3 className="text-2xl md:text-3xl font-bold leading-snug">
-              Passionate software developer building polished digital solutions with modern frameworks.
-            </h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Transitioning into advanced software development engineering, combining rigorous technical discipline with high-end interactive visual design.
+          <div className="space-y-6 order-1 md:order-2 relative">
+            <span key={aboutGlowPulse} aria-hidden="true" className={`about-watermark ${aboutGlowPulse ? 'about-watermark-pulse' : ''}`}>ABOUT</span>
+            <p className="relative z-10 max-w-xl text-sm md:text-base leading-relaxed text-gray-300 font-anta">
+              I am a full-stack software developer passionate about solving complex logical problems and transforming them into smooth, responsive digital experiences. Building on a strong foundational programming background, I am currently sharpening my technical toolkit through intensive full-stack training at Life Choices Academy. I love bridging the gap between robust backend logic and user-friendly frontend design.
             </p>
-            <button className="px-6 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/20 transition text-xs font-semibold uppercase">
-              Read More
-            </button>
           </div>
         </div>
       </section>

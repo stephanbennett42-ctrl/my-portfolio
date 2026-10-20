@@ -12,3 +12,74 @@
 .animate-heroFloat {
   animation: heroFloat 6s ease-in-out infinite;
 }
+
+.about-portrait-frame {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(196, 145, 255, 0.4);
+  border-radius: 2rem;
+  background: radial-gradient(ellipse at 50% 38%, rgba(126, 34, 206, 0.2), rgba(14, 6, 22, 0.24) 68%);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.32), 0 0 46px rgba(147, 51, 234, 0.16);
+}
+
+.about-portrait-frame::before {
+  position: absolute;
+  z-index: 2;
+  inset: 10px;
+  border: 1px solid rgba(216, 180, 254, 0.18);
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
+}
+
+.about-portrait-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 84%;
+  transform: scale(1.03);
+}
+
+.about-watermark {
+  position: absolute;
+  top: -0.9em;
+  left: -0.04em;
+  z-index: 0;
+  color: transparent;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(3.75rem, 13vw, 11rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  opacity: 0.58;
+  pointer-events: none;
+  white-space: nowrap;
+  filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.2));
+  -webkit-text-stroke: 1.5px rgba(168, 85, 247, 0.25);
+}
+
+.about-watermark-pulse {
+  animation: aboutGlowPulse 1.2s ease-out both;
+}
+
+@keyframes aboutGlowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.2));
+    opacity: 0.58;
+    -webkit-text-stroke-color: rgba(168, 85, 247, 0.25);
+  }
+  45% {
+    filter: drop-shadow(0 0 34px rgba(168, 85, 247, 0.85));
+    opacity: 1;
+    -webkit-text-stroke-color: rgba(216, 180, 254, 0.75);
+  }
+}
+
+@media (min-width: 768px) {
+  .about-watermark {
+    top: -1em;
+  }
+}
