@@ -1,65 +1,406 @@
-import { Store, Cpu, Users, Shield, ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Home, UserRound, Cpu, Folder, Mail, Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+const aboutHighlights = [
+  { title: 'Core Technologies', detail: 'JS, Node, PHP' },
+  { title: 'Development Focus', detail: 'Full-stack, REST APIs' },
+  { title: 'Problem Solving', detail: 'Clean code, MySQL' },
+];
+
+const technicalStack = [
+  {
+    title: 'Frontend Development',
+    description: 'Building modern, responsive front-end interfaces with intuitive user experiences, clean code, and semantic HTML and CSS.',
+    technologies: ['HTML', 'CSS', 'JS'],
+  },
+  {
+    title: 'Backend Systems',
+    description: 'Developing reliable server-side logic, RESTful API endpoints, and efficient data workflows built for performance and security.',
+    technologies: ['Node', 'Express', 'PHP'],
+  },
+  {
+    title: 'Tools & Workflow',
+    description: 'Working with relational databases, version control, and Linux environments to support efficient development workflows.',
+    technologies: ['MySQL', 'Git', 'Linux'],
+  },
+];
+
+const featuredProjects = [
+  {
+    title: 'Pawtopia',
+    description: 'Find trusted care for your pet, from daycare and boarding to grooming, all in one place so you can travel or work with peace of mind.',
+    technologies: ['HTML', 'CSS', 'JavaScript'],
+    type: 'Pet care platform',
+  },
+  {
+    title: 'Modern Tech Solutions HR System',
+    description: 'One secure HR hub for employee records, payroll, leave, and attendance, replacing scattered spreadsheets and emails with a database-backed system.',
+    technologies: ['HTML', 'JavaScript', 'CSS'],
+    type: 'HR management system',
+  },
+  {
+    title: 'ApplyDirect-SA',
+    description: 'Find the right South African university or college faster. Explore courses and entry requirements, then filter your options in one streamlined guide.',
+    technologies: ['Vue', 'JavaScript', 'CSS', 'HTML'],
+    type: 'Education directory',
+  },
+];
+
 export default function App() {
-  const [aboutGlowPulse, setAboutGlowPulse] = useState(0);
+  const [aboutIsVisible, setAboutIsVisible] = useState(false);
+  const [aboutAnimationStarted, setAboutAnimationStarted] = useState(false);
+  const [techStackAnimationActive, setTechStackAnimationActive] = useState(false);
+  const [featuredProjectsAnimationActive, setFeaturedProjectsAnimationActive] = useState(false);
+  const [contactAnimationActive, setContactAnimationActive] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
+  const [desktopSidebarPinned, setDesktopSidebarPinned] = useState(false);
+  const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const [activeNavigationSection, setActiveNavigationSection] = useState('home');
   const aboutSectionRef = useRef(null);
+  const technicalStackRef = useRef(null);
+  const featuredProjectsRef = useRef(null);
+  const contactSectionRef = useRef(null);
+  const projectSwipeStartRef = useRef(null);
+  const aboutDustCanvasRef = useRef(null);
+  const aboutPortraitRef = useRef(null);
+  const aboutAssetsReadyRef = useRef(Promise.resolve());
+
+  const moveProject = (direction) => {
+    setActiveProjectIndex((currentIndex) => (
+      currentIndex + direction + featuredProjects.length
+    ) % featuredProjects.length);
+  };
+
+  const handleProjectPointerDown = (event) => {
+    projectSwipeStartRef.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleProjectPointerUp = (event) => {
+    const start = projectSwipeStartRef.current;
+    projectSwipeStartRef.current = null;
+    if (!start) return;
+
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    moveProject(deltaX < 0 ? 1 : -1);
+  };
+
+  const handleProjectKeyDown = (event) => {
+    if (event.key === 'ArrowRight') moveProject(1);
+    if (event.key === 'ArrowLeft') moveProject(-1);
+  };
+
+  useEffect(() => {
+    const portraitImage = aboutPortraitRef.current;
+    const fontReady = document.fonts.load('400 180px Molgan').catch(() => undefined);
+    const portraitReady = portraitImage?.decode
+      ? portraitImage.decode().catch(() => undefined)
+      : Promise.resolve();
+
+    aboutAssetsReadyRef.current = Promise.all([fontReady, portraitReady]);
+  }, []);
+
+  useEffect(() => {
+    const sectionIds = ['home', 'about', 'stack', 'projects', 'contact'];
+    const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const currentSection = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (currentSection) setActiveNavigationSection(currentSection.target.id);
+    }, {
+      rootMargin: '-42% 0px -42% 0px',
+      threshold: [0, 0.1, 0.25, 0.5, 0.75],
+    });
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const aboutSection = aboutSectionRef.current;
     if (!aboutSection) return;
 
-    let wasVisible = false;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !wasVisible) {
-          setAboutGlowPulse((pulse) => pulse + 1);
-          wasVisible = true;
-        } else if (!entry.isIntersecting) {
-          wasVisible = false;
-        }
+        setAboutIsVisible(entry.isIntersecting);
+        if (!entry.isIntersecting) setAboutAnimationStarted(false);
       },
-      { threshold: 0.25 }
+      { threshold: 0 }
     );
 
     observer.observe(aboutSection);
     return () => observer.disconnect();
   }, []);
 
-  const services = [
-    {
-      icon: <Store className="w-6 h-6 text-purple-400" />,
-      title: "Consumer Markets",
-      desc: "With a track record of success across diverse industries, we deliver tailored web solutions that drive growth."
-    },
-    {
-      icon: <Cpu className="w-6 h-6 text-purple-400" />,
-      title: "Technology Consulting",
-      desc: "Building long-term tech solutions centered on scalable architecture, clean code, and modern UI performance."
-    },
-    {
-      icon: <Users className="w-6 h-6 text-purple-400" />,
-      title: "Consulting Service",
-      desc: "Providing strategic development insights enabling you to offer innovative digital experiences."
-    },
-    {
-      icon: <Shield className="w-6 h-6 text-purple-400" />,
-      title: "Private Consulting",
-      desc: "Dedicated personal consultation for bespoke software applications tailored to unique brand needs."
-    }
-  ];
+  useEffect(() => {
+    const stackSection = technicalStackRef.current;
+    if (!stackSection || techStackAnimationActive) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setTechStackAnimationActive(true);
+      observer.disconnect();
+    }, { threshold: 0.2 });
+
+    observer.observe(stackSection);
+    return () => observer.disconnect();
+  }, [techStackAnimationActive]);
+
+  useEffect(() => {
+    const projectsSection = featuredProjectsRef.current;
+    if (!projectsSection || featuredProjectsAnimationActive) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setFeaturedProjectsAnimationActive(true);
+      observer.disconnect();
+    }, { threshold: 0.15 });
+
+    observer.observe(projectsSection);
+    return () => observer.disconnect();
+  }, [featuredProjectsAnimationActive]);
+
+  useEffect(() => {
+    const contactSection = contactSectionRef.current;
+    if (!contactSection || contactAnimationActive) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setContactAnimationActive(true);
+      observer.disconnect();
+    }, { threshold: 0.2 });
+
+    observer.observe(contactSection);
+    return () => observer.disconnect();
+  }, [contactAnimationActive]);
+
+  useEffect(() => {
+    if (!aboutIsVisible) return;
+
+    const canvas = aboutDustCanvasRef.current;
+    const stage = canvas?.parentElement;
+    if (!canvas || !stage) return;
+
+    let animationFrame;
+    let cancelled = false;
+
+    const assembleWord = async () => {
+      await aboutAssetsReadyRef.current;
+      if (cancelled) return;
+      const portraitImage = aboutPortraitRef.current;
+      if (!portraitImage) return;
+
+      const { width, height } = stage.getBoundingClientRect();
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+      const textCanvas = document.createElement('canvas');
+      textCanvas.width = Math.ceil(width);
+      textCanvas.height = Math.ceil(height);
+      const textContext = textCanvas.getContext('2d');
+      if (!textContext) return;
+
+      const fontSize = Math.min(256, Math.max(54, window.innerWidth * 0.18));
+      const titleTop = window.innerWidth >= 1024
+        ? Math.min(56, Math.max(16, window.innerWidth * 0.04))
+        : 112;
+      textContext.font = `400 ${fontSize}px Molgan, sans-serif`;
+      textContext.textAlign = 'center';
+      textContext.textBaseline = 'top';
+      const gradient = textContext.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(0.42, '#e9d5ff');
+      gradient.addColorStop(0.72, '#7030ef');
+      gradient.addColorStop(1, '#db1fff');
+      textContext.fillStyle = gradient;
+      textContext.fillText('ABOUT', width / 2, titleTop);
+
+      const portraitCanvas = document.createElement('canvas');
+      portraitCanvas.width = Math.ceil(width);
+      portraitCanvas.height = Math.ceil(height);
+      const portraitContext = portraitCanvas.getContext('2d');
+      if (!portraitContext) return;
+      const portraitWidth = Math.min(430, Math.max(260, window.innerWidth * 0.32));
+      const portraitHeight = Math.min(height, 560) + 24;
+      const portraitScale = Math.min(
+        portraitWidth / portraitImage.naturalWidth,
+        portraitHeight / portraitImage.naturalHeight
+      );
+      const drawnPortraitWidth = portraitImage.naturalWidth * portraitScale;
+      const drawnPortraitHeight = portraitImage.naturalHeight * portraitScale;
+      const portraitX = (width - drawnPortraitWidth) / 2;
+      const portraitY = height - drawnPortraitHeight;
+      portraitContext.drawImage(
+        portraitImage,
+        portraitX,
+        portraitY,
+        drawnPortraitWidth,
+        drawnPortraitHeight
+      );
+
+      const solidGradient = context.createLinearGradient(0, 0, width, 0);
+      solidGradient.addColorStop(0, '#ffffff');
+      solidGradient.addColorStop(0.42, '#e9d5ff');
+      solidGradient.addColorStop(0.72, '#7030ef');
+      solidGradient.addColorStop(1, '#db1fff');
+
+      const { data } = textContext.getImageData(0, 0, textCanvas.width, textCanvas.height);
+      const points = [];
+      const sampleSpacing = 6;
+      for (let y = 0; y < textCanvas.height; y += sampleSpacing) {
+        for (let x = 0; x < textCanvas.width; x += sampleSpacing) {
+          const pixel = (y * textCanvas.width + x) * 4;
+          if (data[pixel + 3] > 160) {
+            points.push({
+              x,
+              y,
+              color: `rgb(${data[pixel]}, ${data[pixel + 1]}, ${data[pixel + 2]})`,
+              startX: width + Math.random() * width * 0.35,
+              startY: Math.random() * height,
+              delay: Math.random() * 0.32,
+              radius: 0.4 + Math.random() * 0.55,
+              gust: (Math.random() - 0.5) * 24,
+              phase: Math.random() * Math.PI * 2,
+            });
+          }
+        }
+      }
+
+      const textParticleLimit = 1900;
+      const particles = points.length > textParticleLimit
+        ? points.filter((_, index) => index % Math.ceil(points.length / textParticleLimit) === 0)
+        : points;
+      const portraitPixels = portraitContext.getImageData(0, 0, portraitCanvas.width, portraitCanvas.height).data;
+      const portraitPoints = [];
+      const portraitSampleSpacing = 6;
+      for (let y = 0; y < portraitCanvas.height; y += portraitSampleSpacing) {
+        for (let x = 0; x < portraitCanvas.width; x += portraitSampleSpacing) {
+          const pixel = (y * portraitCanvas.width + x) * 4;
+          const red = portraitPixels[pixel];
+          const green = portraitPixels[pixel + 1];
+          const blue = portraitPixels[pixel + 2];
+          const alpha = portraitPixels[pixel + 3] / 255;
+          if (alpha > 0.32 && red + green + blue > 24) {
+            portraitPoints.push({
+              x,
+              y,
+              color: `rgba(${red}, ${green}, ${blue}, ${alpha})`,
+              startX: width + Math.random() * width * 0.35,
+              startY: Math.random() * height,
+              delay: Math.random() * 0.3,
+              radius: 0.45 + Math.random() * 0.55,
+              gust: (Math.random() - 0.5) * 24,
+            });
+          }
+        }
+      }
+      const portraitParticleLimit = 2300;
+      const portraitParticles = portraitPoints.length > portraitParticleLimit
+        ? portraitPoints.filter((_, index) => index % Math.ceil(portraitPoints.length / portraitParticleLimit) === 0)
+        : portraitPoints;
+      const startedAt = performance.now();
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const draw = (now) => {
+        if (cancelled) return;
+        context.clearRect(0, 0, width, height);
+        const elapsed = reducedMotion ? 3100 : now - startedAt;
+        const assembly = Math.min(1, elapsed / 2200);
+        const solidProgress = reducedMotion ? 1 : Math.max(0, Math.min(1, (elapsed - 1900) / 900));
+        const portraitAssembly = Math.min(1, elapsed / 2500);
+        const portraitSolidProgress = reducedMotion ? 1 : Math.max(0, Math.min(1, (elapsed - 2200) / 900));
+
+        if (solidProgress < 1) {
+          for (const particle of particles) {
+            const localProgress = Math.max(0, Math.min(1, (assembly - particle.delay) / (1 - particle.delay)));
+            const eased = 1 - (1 - localProgress) ** 3;
+            const x = particle.startX + (particle.x - particle.startX) * eased;
+            const y = particle.startY + (particle.y - particle.startY) * eased + Math.sin(eased * Math.PI) * particle.gust;
+            context.globalAlpha = (0.38 + localProgress * 0.62) * (1 - solidProgress);
+            context.fillStyle = particle.color;
+            context.beginPath();
+            context.arc(x, y, particle.radius, 0, Math.PI * 2);
+            context.fill();
+          }
+        }
+        context.globalAlpha = 1;
+        context.shadowBlur = 0;
+        context.font = `400 ${fontSize}px Molgan, sans-serif`;
+        context.textAlign = 'center';
+        context.textBaseline = 'top';
+        context.fillStyle = solidGradient;
+        context.globalAlpha = solidProgress;
+        context.fillText('ABOUT', width / 2, titleTop);
+        context.globalAlpha = 1;
+
+        if (portraitSolidProgress < 1) {
+          for (const particle of portraitParticles) {
+            const localProgress = Math.max(0, Math.min(1, (portraitAssembly - particle.delay) / (1 - particle.delay)));
+            const eased = 1 - (1 - localProgress) ** 3;
+            const x = particle.startX + (particle.x - particle.startX) * eased;
+            const y = particle.startY + (particle.y - particle.startY) * eased + Math.sin(eased * Math.PI) * particle.gust;
+            context.globalAlpha = (0.3 + localProgress * 0.7) * (1 - portraitSolidProgress);
+            context.fillStyle = particle.color;
+            context.beginPath();
+            context.arc(x, y, particle.radius, 0, Math.PI * 2);
+            context.fill();
+          }
+        }
+        context.globalAlpha = portraitSolidProgress;
+        context.shadowBlur = 0;
+        context.drawImage(portraitCanvas, 0, 0, width, height);
+        context.globalAlpha = 1;
+
+        if (!reducedMotion && (solidProgress < 1 || portraitSolidProgress < 1)) {
+          animationFrame = requestAnimationFrame(draw);
+        }
+      };
+
+      draw(startedAt);
+      setAboutAnimationStarted(true);
+    };
+
+    assembleWord();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [aboutIsVisible]);
 
   return (
     <div className="min-h-screen bg-[#07030d] text-white selection:bg-purple-500 selection:text-white font-sans relative overflow-x-hidden pt-6">
       
       {/* Google Fonts - Orbitron */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anta&family=Audiowide&family=Orbitron:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Anta&family=Audiowide&family=Michroma&family=Orbitron:wght@700;900&family=Outfit:wght@400;700;800;900&display=swap');
         .font-futuristic {
           font-family: 'Orbitron', sans-serif;
         }
         .font-logo {
           font-family: 'Audiowide', sans-serif;
+        }
+        .font-about-gradient {
+          font-family: 'Molgan', sans-serif;
+          font-weight: 400;
+          background: linear-gradient(105deg, #ffffff 8%, #e9d5ff 42%, #7030ef 72%, #db1fff 100%);
+          background-clip: text;
+          -webkit-background-clip: text;
+          color: transparent;
+          -webkit-text-fill-color: transparent;
+        }
+        .font-about-copy {
+          font-family: 'Outfit', sans-serif;
         }
         .font-anta {
           font-family: 'Anta', sans-serif;
@@ -74,37 +415,96 @@ export default function App() {
 
       {/* Floating Pill Glass Navbar */}
       <div className="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 max-w-7xl mx-auto">
-        <nav className="bg-[#120a1c]/70 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex justify-between items-center shadow-2xl shadow-purple-950/40">
-          
-          {/* Brand Initials: S (Pink) and B (White) */}
-          <div className="flex items-center space-x-0.5">
-            <span className="text-pink-500 font-futuristic text-xl font-black">S</span>
-            <span className="text-white font-futuristic text-xl font-black">B</span>
-          </div>
+        <div
+          className={`desktop-sidebar-shell ${desktopSidebarExpanded ? 'is-expanded' : ''}`}
+          onMouseEnter={() => setDesktopSidebarExpanded(true)}
+          onMouseLeave={() => { if (!desktopSidebarPinned) setDesktopSidebarExpanded(false); }}
+          onFocus={() => setDesktopSidebarExpanded(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget) && !desktopSidebarPinned) {
+              setDesktopSidebarExpanded(false);
+            }
+          }}
+        >
+          <nav className="desktop-sidebar-rail" aria-label="Quick navigation">
+            <a href="#home" className="desktop-sidebar-brand" aria-label="Stephan Bennett, home"><span>S</span><span>B</span></a>
+            <button
+              type="button"
+              className="desktop-sidebar-toggle"
+              aria-label={desktopSidebarPinned ? 'Collapse navigation sidebar' : 'Keep navigation sidebar open'}
+              aria-expanded={desktopSidebarExpanded}
+              onClick={() => {
+                const shouldPinOpen = !desktopSidebarPinned;
+                setDesktopSidebarPinned(shouldPinOpen);
+                setDesktopSidebarExpanded(shouldPinOpen);
+              }}
+            >
+              {desktopSidebarExpanded ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            </button>
+            <span className="desktop-sidebar-divider" />
+            <a href="#home" onClick={() => setActiveNavigationSection('home')} className={`desktop-sidebar-icon ${activeNavigationSection === 'home' ? 'is-current' : ''}`} aria-label="Home" title="Home"><Home aria-hidden="true" /></a>
+            <a href="#about" onClick={() => { setAboutIsVisible(true); setActiveNavigationSection('about'); }} className={`desktop-sidebar-icon ${activeNavigationSection === 'about' ? 'is-current' : ''}`} aria-label="About" title="About"><UserRound aria-hidden="true" /></a>
+            <a href="#stack" onClick={() => { setTechStackAnimationActive(true); setActiveNavigationSection('stack'); }} className={`desktop-sidebar-icon ${activeNavigationSection === 'stack' ? 'is-current' : ''}`} aria-label="Tech Stack" title="Tech Stack"><Cpu aria-hidden="true" /></a>
+            <a href="#projects" onClick={() => setActiveNavigationSection('projects')} className={`desktop-sidebar-icon ${activeNavigationSection === 'projects' ? 'is-current' : ''}`} aria-label="Projects" title="Projects"><Folder aria-hidden="true" /></a>
+            <a href="#contact" onClick={() => setActiveNavigationSection('contact')} className={`desktop-sidebar-icon ${activeNavigationSection === 'contact' ? 'is-current' : ''}`} aria-label="Contact" title="Contact"><Mail aria-hidden="true" /></a>
+          </nav>
 
-          {/* Clean Navigation Links: Home & About only */}
-          <div className="hidden md:flex items-center space-x-8 text-xs font-medium text-gray-300">
-            <a href="#home" className="relative text-white font-semibold py-1 group">
-              Home
-              <span className="absolute left-0 right-0 -bottom-1 h-[2.5px] bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"></span>
-            </a>
-            <a href="#about" onClick={() => setAboutGlowPulse((pulse) => pulse + 1)} className="hover:text-white transition py-1">About</a>
-          </div>
+          <nav className="desktop-sidebar-panel" aria-label="Main navigation" aria-hidden={!desktopSidebarExpanded}>
+            <div className="desktop-sidebar-panel-brand"><span className="desktop-sidebar-brand-mark">SB</span><span>Stephan Bennett</span></div>
+            <span className="desktop-sidebar-panel-label">Navigation</span>
+            <a href="#home" onClick={() => setActiveNavigationSection('home')} className={`desktop-sidebar-link ${activeNavigationSection === 'home' ? 'is-current' : ''}`}><Home aria-hidden="true" /><span>Home</span></a>
+            <a href="#about" onClick={() => { setAboutIsVisible(true); setActiveNavigationSection('about'); }} className={`desktop-sidebar-link ${activeNavigationSection === 'about' ? 'is-current' : ''}`}><UserRound aria-hidden="true" /><span>About</span></a>
+            <a href="#stack" onClick={() => { setTechStackAnimationActive(true); setActiveNavigationSection('stack'); }} className={`desktop-sidebar-link ${activeNavigationSection === 'stack' ? 'is-current' : ''}`}><Cpu aria-hidden="true" /><span>Tech Stack</span></a>
+            <a href="#projects" onClick={() => setActiveNavigationSection('projects')} className={`desktop-sidebar-link ${activeNavigationSection === 'projects' ? 'is-current' : ''}`}><Folder aria-hidden="true" /><span>Projects</span></a>
+            <a href="#contact" onClick={() => setActiveNavigationSection('contact')} className={`desktop-sidebar-link ${activeNavigationSection === 'contact' ? 'is-current' : ''}`}><Mail aria-hidden="true" /><span>Contact</span></a>
+            <a href="#contact" onClick={() => setActiveNavigationSection('contact')} className="desktop-sidebar-cta"><span>Start A Project</span><ArrowRight aria-hidden="true" /></a>
+          </nav>
+        </div>
 
-          {/* Pill Action Button */}
-          <button className="px-5 py-2 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-md transition text-xs font-medium tracking-wide text-white">
-            Start A Project
+        <nav className="portfolio-navbar" aria-label="Main navigation">
+          <a href="#home" className="navbar-brand" aria-label="Stephan Bennett, home"><span>S</span><span>B</span></a>
+          <button
+            type="button"
+            className="navbar-mobile-toggle"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setMobileMenuOpen((isOpen) => !isOpen)}
+          >
+            {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </nav>
+
+        {mobileMenuOpen && (
+          <div id="mobile-navigation" className="navbar-mobile-panel">
+            <span className="navbar-mobile-label">Navigation</span>
+            <a href="#home" className={`navbar-mobile-link ${activeNavigationSection === 'home' ? 'is-current' : ''}`} onClick={() => { setActiveNavigationSection('home'); setMobileMenuOpen(false); }}>
+              <Home aria-hidden="true" /><span>Home</span>
+            </a>
+            <a href="#about" className={`navbar-mobile-link ${activeNavigationSection === 'about' ? 'is-current' : ''}`} onClick={() => { setAboutIsVisible(true); setActiveNavigationSection('about'); setMobileMenuOpen(false); }}>
+              <UserRound aria-hidden="true" /><span>About</span>
+            </a>
+            <a href="#stack" className={`navbar-mobile-link ${activeNavigationSection === 'stack' ? 'is-current' : ''}`} onClick={() => { setTechStackAnimationActive(true); setActiveNavigationSection('stack'); setMobileMenuOpen(false); }}>
+              <Cpu aria-hidden="true" /><span>Tech Stack</span>
+            </a>
+            <a href="#projects" className={`navbar-mobile-link ${activeNavigationSection === 'projects' ? 'is-current' : ''}`} onClick={() => { setActiveNavigationSection('projects'); setMobileMenuOpen(false); }}>
+              <Folder aria-hidden="true" /><span>Projects</span>
+            </a>
+            <a href="#contact" className={`navbar-mobile-link ${activeNavigationSection === 'contact' ? 'is-current' : ''}`} onClick={() => { setActiveNavigationSection('contact'); setMobileMenuOpen(false); }}>
+              <Mail aria-hidden="true" /><span>Contact</span>
+            </a>
+            <a href="#contact" className="navbar-mobile-cta" onClick={() => setMobileMenuOpen(false)}>Start A Project</a>
+          </div>
+        )}
       </div>
 
       {/* Hero Section */}
       <section id="home" className="min-h-screen flex items-center max-w-7xl mx-auto px-8 pt-24 relative z-10">
         <div className="grid md:grid-cols-2 items-center gap-12 w-full">
-          <div className="space-y-6">
+          <div className="space-y-6 font-about-copy">
             <div className="space-y-1">
-              <span className="text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">SOFTWARE DEVELOPER</span>
-              <h2 className="text-[clamp(1.5rem,5.2vw,3.25rem)] font-black tracking-[-0.04em] leading-none [word-spacing:0.12em] text-white font-logo uppercase">
+              <span className="text-sm tracking-[0.3em] text-gray-400 uppercase font-bold font-aquire">SOFTWARE DEVELOPER</span>
+              <h2 className="text-[clamp(1.5rem,5.2vw,3.25rem)] tracking-[-0.04em] leading-none [word-spacing:0.12em] font-about-gradient uppercase">
                 STEPHAN BENNETT
               </h2>
             </div>
@@ -135,57 +535,233 @@ export default function App() {
 
       {/* About Section */}
       <section ref={aboutSectionRef} id="about" className="py-28 max-w-7xl mx-auto px-8 relative z-10">
-        <div className="grid md:grid-cols-2 items-center gap-16">
-          <div className="about-portrait-frame w-72 h-96 md:w-[420px] md:h-[540px] order-2 md:order-1 md:translate-x-12 animate-heroFloat">
-            <img
-              src="/stephan-bennett.png"
-              alt="Portrait of Stephan Bennett"
-              className="about-portrait-image"
-            />
-          </div>
+        <div className="about-composition">
+          <span aria-hidden="true" className={`about-watermark ${aboutAnimationStarted ? 'is-hidden' : ''}`}>ABOUT</span>
+          <img
+            ref={aboutPortraitRef}
+            src="/stephan-bennett.png"
+            alt="Portrait of Stephan Bennett"
+            className={`about-overlay-portrait ${aboutAnimationStarted ? 'is-hidden' : ''}`}
+          />
+          <canvas ref={aboutDustCanvasRef} aria-hidden="true" className={`about-dust-canvas ${aboutAnimationStarted ? 'is-active' : ''}`} />
+        </div>
+        <p className="about-bio max-w-3xl mx-auto text-sm md:text-base leading-relaxed text-gray-300 font-about-copy font-normal">
+          I am a full-stack software developer passionate about solving complex logical problems and transforming them into smooth, responsive digital experiences. Building on a strong foundational programming background, I am currently sharpening my technical toolkit through intensive full-stack training at Life Choices Academy. I love bridging the gap between robust backend logic and user-friendly frontend design.
+        </p>
 
-          <div className="space-y-6 order-1 md:order-2 relative">
-            <span key={aboutGlowPulse} aria-hidden="true" className={`about-watermark ${aboutGlowPulse ? 'about-watermark-pulse' : ''}`}>ABOUT</span>
-            <p className="relative z-10 max-w-xl text-sm md:text-base leading-relaxed text-gray-300 font-anta">
-              I am a full-stack software developer passionate about solving complex logical problems and transforming them into smooth, responsive digital experiences. Building on a strong foundational programming background, I am currently sharpening my technical toolkit through intensive full-stack training at Life Choices Academy. I love bridging the gap between robust backend logic and user-friendly frontend design.
-            </p>
-          </div>
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {aboutHighlights.map((highlight) => (
+            <article key={highlight.title} className="about-highlight-card">
+              <h3 className="about-highlight-title">{highlight.title}</h3>
+              <p className="about-highlight-detail">{highlight.detail}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 max-w-7xl mx-auto px-8 relative z-10">
-        <div className="space-y-3 mb-12">
-          <span className="text-xs tracking-[0.3em] text-gray-400 uppercase font-bold">WHAT I DO</span>
-          <h3 className="text-3xl md:text-4xl font-bold">
-            Elevate Your Platform With <br />
-            <span className="text-purple-400">Tailored Modern Solutions</span>
+      {/* Technical Stack Section */}
+      <section ref={technicalStackRef} id="stack" className={`technical-stack-section max-w-7xl mx-auto px-8 py-24 relative z-10 ${techStackAnimationActive ? 'is-active' : ''}`}>
+        <header className="technical-stack-header">
+          <h3 className="technical-stack-title" aria-label="Technical Skillset">
+            <span className="technical-stack-word" aria-hidden="true">
+              {'Technical'.split('').map((letter, index) => (
+                <span key={`technical-${index}`} className="technical-stack-letter" style={{ '--flash-delay': `${index * 0.17}s` }}>{letter}</span>
+              ))}
+            </span>
+            <span className="technical-stack-word" aria-hidden="true">
+              {'Skillset'.split('').map((letter, index) => (
+                <span key={`skillset-${index}`} className="technical-stack-letter" style={{ '--flash-delay': `${(7 - index) * 0.17}s` }}>{letter}</span>
+              ))}
+            </span>
           </h3>
-        </div>
+        </header>
 
-        {/* Glassmorphism Cards Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((s, idx) => (
-            <div 
-              key={idx}
-              className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl hover:bg-white/[0.07] hover:border-purple-500/50 transition-all duration-300 group flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-purple-950/40 w-fit border border-purple-500/20">
-                  {s.icon}
-                </div>
-                <h4 className="font-bold text-lg text-white group-hover:text-purple-300 transition">{s.title}</h4>
-                <p className="text-gray-400 text-xs leading-relaxed">{s.desc}</p>
-              </div>
+        <div className="technical-stack-grid">
+          {technicalStack.map((group) => (
+            <article key={group.title} className="technical-stack-card">
+              <h4 className="technical-stack-card-title" aria-label={group.title} data-title={group.title}>
+                {group.title.split(' ').map((word, wordIndex, words) => (
+                  <span key={`${group.title}-${wordIndex}`} className="technical-stack-card-word" aria-hidden="true">
+                    {word.split('').map((letter, letterIndex) => {
+                      const isFirstWord = wordIndex === 0;
+                      const isLastWord = wordIndex === words.length - 1;
+                      const step = isFirstWord
+                        ? letterIndex
+                        : isLastWord
+                          ? word.length - 1 - letterIndex
+                          : Math.ceil(Math.max(...words.map((part) => part.length)) / 2);
 
-              <div className="pt-8 flex justify-end">
-                <button className="p-2 rounded-full border border-white/10 group-hover:border-purple-400 group-hover:bg-purple-500/20 transition">
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-white" />
-                </button>
-              </div>
-            </div>
+                      return (
+                        <span
+                          key={`${group.title}-${wordIndex}-${letterIndex}`}
+                          className={`technical-stack-card-letter ${letter === '&' ? 'is-ampersand' : ''}`}
+                          style={{ '--flash-delay': `${step * 0.17}s` }}
+                        >
+                          {letter}
+                        </span>
+                      );
+                    })}
+                  </span>
+                ))}
+              </h4>
+              <p className="technical-stack-description">{group.description}</p>
+              <ul className="technical-stack-tags" aria-label={`${group.title} technologies`}>
+                {group.technologies.map((technology) => (
+                  <li key={technology} className="technical-stack-tag">{technology}</li>
+                ))}
+              </ul>
+            </article>
           ))}
         </div>
+      </section>
+
+      {/* Featured Projects Section */}
+      <section ref={featuredProjectsRef} id="projects" className={`featured-projects-section max-w-7xl mx-auto px-8 py-24 relative z-10 ${featuredProjectsAnimationActive ? 'is-active' : ''}`}>
+        <header className="featured-projects-header">
+          <h3 className="featured-projects-title" aria-label="Featured Projects">
+            {['Featured', 'Projects'].map((word, wordIndex) => (
+              <span key={word} className="featured-projects-word" aria-hidden="true">
+                {word.split('').map((letter, letterIndex) => {
+                  const flashStep = wordIndex === 0
+                    ? letterIndex
+                    : word.length - 1 - letterIndex;
+
+                  return (
+                    <span
+                      key={`${word}-${letterIndex}`}
+                      className="featured-projects-letter"
+                      style={{ '--flash-delay': `${flashStep * 0.17}s` }}
+                    >
+                      {letter}
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
+          </h3>
+          <p className="featured-projects-intro">A selection of applications built to solve practical problems with thoughtful design and reliable code.</p>
+        </header>
+
+        <div
+          className="featured-projects-carousel"
+          role="region"
+          aria-label="Featured projects carousel"
+          tabIndex={0}
+          onKeyDown={handleProjectKeyDown}
+          onPointerDown={handleProjectPointerDown}
+          onPointerUp={handleProjectPointerUp}
+          onPointerCancel={() => { projectSwipeStartRef.current = null; }}
+        >
+          <div className="featured-projects-ring">
+          {featuredProjects.map((project, index) => {
+            let cardPosition = index - activeProjectIndex;
+            if (cardPosition > featuredProjects.length / 2) cardPosition -= featuredProjects.length;
+            if (cardPosition < -featuredProjects.length / 2) cardPosition += featuredProjects.length;
+            const isActive = cardPosition === 0;
+            return (
+              <article
+                key={project.title}
+                className={`featured-project-card ${isActive ? 'is-active' : ''}`}
+                aria-hidden={!isActive}
+                style={{
+                  '--card-position': cardPosition,
+                  '--card-shift': `${cardPosition * 72}%`,
+                  '--card-depth': isActive ? '45px' : '-55px',
+                  '--card-tilt': cardPosition < 0 ? '12deg' : cardPosition > 0 ? '-12deg' : '0deg',
+                  '--card-scale': isActive ? '1' : '0.78',
+                  zIndex: featuredProjects.length - Math.abs(cardPosition),
+                }}
+              >
+                <div className="featured-project-content">
+                  <span className="featured-project-type">{project.type}</span>
+                  <h4 className="featured-project-name">{project.title}</h4>
+                  <p className="featured-project-description">{project.description}</p>
+                  <ul className="featured-project-tags" aria-label={`${project.title} technologies`}>
+                    {project.technologies.map((technology) => (
+                      <li key={technology}>{technology}</li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            );
+          })}
+          </div>
+        </div>
+
+        <div className="featured-project-controls" aria-label="Project navigation">
+          <button type="button" className="featured-project-control" onClick={() => moveProject(-1)} aria-label="Previous project">
+            <ChevronLeft aria-hidden="true" />
+          </button>
+          <span className="featured-project-count" aria-live="polite">
+            {String(activeProjectIndex + 1).padStart(2, '0')} <span>/</span> {String(featuredProjects.length).padStart(2, '0')}
+          </span>
+          <button type="button" className="featured-project-control" onClick={() => moveProject(1)} aria-label="Next project">
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section ref={contactSectionRef} id="contact" className={`contact-section max-w-7xl mx-auto px-8 py-24 relative z-10 ${contactAnimationActive ? 'is-active' : ''}`}>
+        <div className="contact-intro">
+          <span className="contact-eyebrow">HAVE A PROJECT IN MIND?</span>
+          <h3 className="contact-title" aria-label="Let’s Connect">
+            {['Let’s', 'Connect'].map((word, wordIndex) => (
+              <span key={word} className="contact-title-word" aria-hidden="true">
+                {word.split('').map((letter, letterIndex) => {
+                  const flashStep = wordIndex === 0
+                    ? letterIndex
+                    : word.length - 1 - letterIndex;
+
+                  return (
+                    <span
+                      key={`${word}-${letterIndex}`}
+                      className="contact-title-letter"
+                      style={{ '--flash-delay': `${flashStep * 0.17}s` }}
+                    >
+                      {letter}
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
+          </h3>
+          <p className="contact-description">
+            Tell me a little about what you’re building. I’d love to hear about your idea and explore how I can help.
+          </p>
+        </div>
+
+        <form className="contact-form" onSubmit={(event) => event.preventDefault()}>
+          <div className="contact-form-heading">
+            <span className="contact-form-status" aria-hidden="true" />
+            <span>Send a message</span>
+          </div>
+
+          <div className="contact-fields-row">
+            <label className="contact-field">
+              <span>Your name</span>
+              <input type="text" name="name" autoComplete="name" placeholder="Name" required />
+            </label>
+            <label className="contact-field">
+              <span>Email address</span>
+              <input type="email" name="email" autoComplete="email" placeholder="you@example.com" required />
+            </label>
+          </div>
+
+          <label className="contact-field">
+            <span>Subject</span>
+            <input type="text" name="subject" placeholder="What would you like to discuss?" required />
+          </label>
+
+          <label className="contact-field">
+            <span>Message</span>
+            <textarea name="message" rows="5" placeholder="Share a few details about your project..." required />
+          </label>
+
+          <button className="contact-submit" type="submit">
+            Send Message <ArrowRight aria-hidden="true" />
+          </button>
+        </form>
       </section>
 
     </div>
