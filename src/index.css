@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 @font-face {
   font-family: 'Molgan';
   src: url('/fonts/molgan/MolganRegular-YqWj2.otf') format('opentype');

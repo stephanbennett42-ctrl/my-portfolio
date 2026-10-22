@@ -147,18 +147,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const aboutSection = aboutSectionRef.current;
-    if (!aboutSection) return;
+    const aboutComposition = aboutSectionRef.current?.querySelector('.about-composition');
+    if (!aboutComposition) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setAboutIsVisible(entry.isIntersecting);
         if (!entry.isIntersecting) setAboutAnimationStarted(false);
       },
-      { threshold: 0 }
+      { threshold: 0.15 }
     );
 
-    observer.observe(aboutSection);
+    observer.observe(aboutComposition);
     return () => observer.disconnect();
   }, []);
 
