@@ -1,6 +1,12 @@
 import { ArrowRight, ChevronLeft, ChevronRight, Home, UserRound, Cpu, Folder, Mail, Menu, X } from 'lucide-react';
 import { useForm, ValidationError } from '@formspree/react';
 import { useEffect, useRef, useState } from 'react';
+import InitialsIntro from './components/InitialsIntro.jsx';
+
+function shouldPlayInitialsIntro() {
+  if (typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  return true;
+}
 
 const aboutHighlights = [
   { title: 'Core Technologies', detail: 'JS, Node, PHP' },
@@ -49,6 +55,7 @@ const featuredProjects = [
 
 export default function App() {
   const [formState, handleContactSubmit, resetContactForm] = useForm('mwlvgjkq');
+  const [showInitialsIntro, setShowInitialsIntro] = useState(shouldPlayInitialsIntro);
   const [aboutIsVisible, setAboutIsVisible] = useState(false);
   const [aboutAnimationStarted, setAboutAnimationStarted] = useState(false);
   const [techStackAnimationActive, setTechStackAnimationActive] = useState(false);
@@ -69,6 +76,19 @@ export default function App() {
   const aboutDustCanvasRef = useRef(null);
   const aboutPortraitRef = useRef(null);
   const aboutAssetsReadyRef = useRef(Promise.resolve());
+
+  useEffect(() => {
+    if (!showInitialsIntro) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const timer = window.setTimeout(() => setShowInitialsIntro(false), 3400);
+    return () => {
+      window.clearTimeout(timer);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showInitialsIntro]);
+
+  const skipInitialsIntro = () => setShowInitialsIntro(false);
 
   const moveProject = (direction) => {
     setActiveProjectIndex((currentIndex) => (
@@ -400,6 +420,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#07030d] text-white selection:bg-purple-500 selection:text-white font-sans relative overflow-x-hidden pt-6">
+      {showInitialsIntro && <InitialsIntro onSkip={skipInitialsIntro} />}
+      <div inert={showInitialsIntro || undefined}>
       {/* Google Fonts - Orbitron */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Anta&family=Audiowide&family=Michroma&family=Orbitron:wght@700;900&family=Outfit:wght@400;700;800;900&display=swap');
@@ -844,6 +866,7 @@ export default function App() {
         </div>
       )}
 
+      </div>
     </div>
   );
 }
