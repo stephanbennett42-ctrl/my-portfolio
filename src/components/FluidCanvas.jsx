@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { MeshTransmissionMaterial, Float } from '@react-three/drei';
 import * as THREE from 'three';

@@ -54,7 +54,7 @@ export default function App() {
   const [techStackAnimationActive, setTechStackAnimationActive] = useState(false);
   const [featuredProjectsAnimationActive, setFeaturedProjectsAnimationActive] = useState(false);
   const [contactAnimationActive, setContactAnimationActive] = useState(false);
-  const [contactThankYouOpen, setContactThankYouOpen] = useState(false);
+  const contactThankYouOpen = formState.succeeded;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [desktopSidebarPinned, setDesktopSidebarPinned] = useState(false);
@@ -186,7 +186,6 @@ export default function App() {
 
   useEffect(() => {
     if (!formState.succeeded) return;
-    setContactThankYouOpen(true);
     contactFormRef.current?.reset();
   }, [formState.succeeded]);
 
@@ -194,7 +193,6 @@ export default function App() {
     if (!contactThankYouOpen) return;
     const closeOnEscape = (event) => {
       if (event.key === 'Escape') {
-        setContactThankYouOpen(false);
         resetContactForm();
       }
     };
@@ -402,7 +400,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#07030d] text-white selection:bg-purple-500 selection:text-white font-sans relative overflow-x-hidden pt-6">
-      
       {/* Google Fonts - Orbitron */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Anta&family=Audiowide&family=Michroma&family=Orbitron:wght@700;900&family=Outfit:wght@400;700;800;900&display=swap');
@@ -822,7 +819,6 @@ export default function App() {
           className="contact-thank-you-backdrop"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setContactThankYouOpen(false);
               resetContactForm();
             }
           }}
@@ -832,7 +828,7 @@ export default function App() {
               type="button"
               className="contact-thank-you-close"
               aria-label="Close thank-you message"
-              onClick={() => { setContactThankYouOpen(false); resetContactForm(); }}
+              onClick={() => resetContactForm()}
               autoFocus
             >
               <X aria-hidden="true" />
@@ -841,7 +837,7 @@ export default function App() {
             <h2 id="contact-thank-you-title">Thank you!</h2>
             <p>Your message has been sent successfully. Thanks for getting in touch!</p>
             <p className="contact-thank-you-note">I’ll get back to you as soon as I can.</p>
-            <button type="button" className="contact-thank-you-button" onClick={() => { setContactThankYouOpen(false); resetContactForm(); }}>
+            <button type="button" className="contact-thank-you-button" onClick={() => resetContactForm()}>
               Got it
             </button>
           </section>
