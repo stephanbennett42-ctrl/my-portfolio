@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronLeft, ChevronRight, Home, UserRound, Cpu, Folder, Mail, Menu, X } from 'lucide-react';
+import { useForm, ValidationError } from '@formspree/react';
 import { useEffect, useRef, useState } from 'react';
 
 const aboutHighlights = [
@@ -47,11 +48,13 @@ const featuredProjects = [
 ];
 
 export default function App() {
+  const [formState, handleContactSubmit, resetContactForm] = useForm('mwlvgjkq');
   const [aboutIsVisible, setAboutIsVisible] = useState(false);
   const [aboutAnimationStarted, setAboutAnimationStarted] = useState(false);
   const [techStackAnimationActive, setTechStackAnimationActive] = useState(false);
   const [featuredProjectsAnimationActive, setFeaturedProjectsAnimationActive] = useState(false);
   const [contactAnimationActive, setContactAnimationActive] = useState(false);
+  const [contactThankYouOpen, setContactThankYouOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [desktopSidebarPinned, setDesktopSidebarPinned] = useState(false);
@@ -61,6 +64,7 @@ export default function App() {
   const technicalStackRef = useRef(null);
   const featuredProjectsRef = useRef(null);
   const contactSectionRef = useRef(null);
+  const contactFormRef = useRef(null);
   const projectSwipeStartRef = useRef(null);
   const aboutDustCanvasRef = useRef(null);
   const aboutPortraitRef = useRef(null);
@@ -179,6 +183,24 @@ export default function App() {
     observer.observe(contactSection);
     return () => observer.disconnect();
   }, [contactAnimationActive]);
+
+  useEffect(() => {
+    if (!formState.succeeded) return;
+    setContactThankYouOpen(true);
+    contactFormRef.current?.reset();
+  }, [formState.succeeded]);
+
+  useEffect(() => {
+    if (!contactThankYouOpen) return;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setContactThankYouOpen(false);
+        resetContactForm();
+      }
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [contactThankYouOpen, resetContactForm]);
 
   useEffect(() => {
     if (!aboutIsVisible) return;
@@ -512,9 +534,33 @@ export default function App() {
             <p className="text-gray-400 max-w-md text-sm leading-relaxed">
               Developing scalable web applications and digital platforms with clean architecture, modern UI performance, and innovative design.
             </p>
-            <div className="pt-2">
+            <div className="hero-actions flex flex-wrap items-center gap-3 pt-2">
               <a href="#projects" className="inline-flex px-7 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/20 transition text-xs font-semibold tracking-wider uppercase shadow-lg shadow-purple-900/20 text-white no-underline">
                 Explore Work
+              </a>
+              <a
+                className="hero-social-link"
+                href="https://github.com/stephanbennett42-ctrl"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Visit my GitHub profile"
+                title="GitHub"
+              >
+                <svg viewBox="0 0 19 19" aria-hidden="true" focusable="false">
+                  <use href="/icons.svg#github-icon" />
+                </svg>
+              </a>
+              <a
+                className="hero-social-link"
+                href="https://www.linkedin.com/in/stephan-bennett-a38351347/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Visit my LinkedIn profile"
+                title="LinkedIn"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.35V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
               </a>
             </div>
           </div>
@@ -731,7 +777,7 @@ export default function App() {
           </p>
         </div>
 
-        <form className="contact-form" onSubmit={(event) => event.preventDefault()}>
+        <form ref={contactFormRef} className="contact-form" onSubmit={handleContactSubmit}>
           <div className="contact-form-heading">
             <span className="contact-form-status" aria-hidden="true" />
             <span>Send a message</span>
@@ -741,28 +787,66 @@ export default function App() {
             <label className="contact-field">
               <span>Your name</span>
               <input type="text" name="name" autoComplete="name" placeholder="Name" required />
+              <ValidationError field="name" errors={formState.errors} className="contact-validation-error" />
             </label>
             <label className="contact-field">
               <span>Email address</span>
               <input type="email" name="email" autoComplete="email" placeholder="you@example.com" required />
+              <ValidationError field="email" errors={formState.errors} className="contact-validation-error" />
             </label>
           </div>
 
           <label className="contact-field">
             <span>Subject</span>
             <input type="text" name="subject" placeholder="What would you like to discuss?" required />
+            <ValidationError field="subject" errors={formState.errors} className="contact-validation-error" />
           </label>
 
           <label className="contact-field">
             <span>Message</span>
             <textarea name="message" rows="5" placeholder="Share a few details about your project..." required />
+            <ValidationError field="message" errors={formState.errors} className="contact-validation-error" />
           </label>
 
-          <button className="contact-submit" type="submit">
-            Send Message <ArrowRight aria-hidden="true" />
+          <ValidationError errors={formState.errors} className="contact-validation-error" role="alert" />
+
+          <button className="contact-submit" type="submit" disabled={formState.submitting}>
+            {formState.submitting ? 'Sending...' : 'Send Message'}
+            {!formState.submitting && <ArrowRight aria-hidden="true" />}
           </button>
         </form>
       </section>
+
+      {contactThankYouOpen && (
+        <div
+          className="contact-thank-you-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setContactThankYouOpen(false);
+              resetContactForm();
+            }
+          }}
+        >
+          <section className="contact-thank-you-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-thank-you-title">
+            <button
+              type="button"
+              className="contact-thank-you-close"
+              aria-label="Close thank-you message"
+              onClick={() => { setContactThankYouOpen(false); resetContactForm(); }}
+              autoFocus
+            >
+              <X aria-hidden="true" />
+            </button>
+            <span className="contact-thank-you-check" aria-hidden="true">✓</span>
+            <h2 id="contact-thank-you-title">Thank you!</h2>
+            <p>Your message has been sent successfully. Thanks for getting in touch!</p>
+            <p className="contact-thank-you-note">I’ll get back to you as soon as I can.</p>
+            <button type="button" className="contact-thank-you-button" onClick={() => { setContactThankYouOpen(false); resetContactForm(); }}>
+              Got it
+            </button>
+          </section>
+        </div>
+      )}
 
     </div>
   );
