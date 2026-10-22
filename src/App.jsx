@@ -513,9 +513,9 @@ export default function App() {
               Developing scalable web applications and digital platforms with clean architecture, modern UI performance, and innovative design.
             </p>
             <div className="pt-2">
-              <button className="px-7 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/20 transition text-xs font-semibold tracking-wider uppercase shadow-lg shadow-purple-900/20">
+              <a href="#projects" className="inline-flex px-7 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/20 transition text-xs font-semibold tracking-wider uppercase shadow-lg shadow-purple-900/20 text-white no-underline">
                 Explore Work
-              </button>
+              </a>
             </div>
           </div>
 
