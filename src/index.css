@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+#nl-badge {
+  display: none;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 1.5rem;
@@ -225,8 +229,7 @@ html {
 }
 
 .desktop-sidebar-shell.is-expanded .desktop-sidebar-panel,
-.desktop-sidebar-shell:hover .desktop-sidebar-panel,
-.desktop-sidebar-shell:focus-within .desktop-sidebar-panel {
+.desktop-sidebar-shell.is-expanded:focus-within .desktop-sidebar-panel {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0) scale(1);

@@ -65,6 +65,7 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [desktopSidebarPinned, setDesktopSidebarPinned] = useState(false);
+  const [desktopSidebarDismissed, setDesktopSidebarDismissed] = useState(false);
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const [activeNavigationSection, setActiveNavigationSection] = useState('home');
   const aboutSectionRef = useRef(null);
@@ -458,9 +459,12 @@ export default function App() {
       <div className="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 max-w-7xl mx-auto">
         <div
           className={`desktop-sidebar-shell ${desktopSidebarExpanded ? 'is-expanded' : ''}`}
-          onMouseEnter={() => setDesktopSidebarExpanded(true)}
-          onMouseLeave={() => { if (!desktopSidebarPinned) setDesktopSidebarExpanded(false); }}
-          onFocus={() => setDesktopSidebarExpanded(true)}
+          onMouseEnter={() => { if (!desktopSidebarDismissed) setDesktopSidebarExpanded(true); }}
+          onMouseLeave={() => {
+            setDesktopSidebarDismissed(false);
+            if (!desktopSidebarPinned) setDesktopSidebarExpanded(false);
+          }}
+          onFocus={() => { if (!desktopSidebarDismissed) setDesktopSidebarExpanded(true); }}
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget) && !desktopSidebarPinned) {
               setDesktopSidebarExpanded(false);
@@ -475,9 +479,15 @@ export default function App() {
               aria-label={desktopSidebarPinned ? 'Collapse navigation sidebar' : 'Keep navigation sidebar open'}
               aria-expanded={desktopSidebarExpanded}
               onClick={() => {
-                const shouldPinOpen = !desktopSidebarPinned;
-                setDesktopSidebarPinned(shouldPinOpen);
-                setDesktopSidebarExpanded(shouldPinOpen);
+                if (desktopSidebarExpanded) {
+                  setDesktopSidebarPinned(false);
+                  setDesktopSidebarExpanded(false);
+                  setDesktopSidebarDismissed(true);
+                  return;
+                }
+                setDesktopSidebarDismissed(false);
+                setDesktopSidebarPinned(true);
+                setDesktopSidebarExpanded(true);
               }}
             >
               {desktopSidebarExpanded ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
