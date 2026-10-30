@@ -804,6 +804,10 @@ export default function App() {
           <p className="contact-description">
             Tell me a little about what you’re building. I’d love to hear about your idea and explore how I can help.
           </p>
+          <a className="contact-email-link" href="mailto:stephanbennett42@gmail.com">
+            <span className="contact-email-label">Email</span>
+            <span className="contact-email-address">stephanbennett42@gmail.com</span>
+          </a>
         </div>
 
         <form ref={contactFormRef} className="contact-form" onSubmit={handleContactSubmit}>

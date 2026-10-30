@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-#nl-badge {
-  display: none;
+#nl-badge,
+#netlify-badge,
+.netlify-badge,
+[data-netlify-badge] {
+  display: none !important;
 }
 
 html {
@@ -1113,6 +1116,34 @@ a.hero-social-link:focus-visible {
   font-family: 'Outfit', sans-serif;
   font-size: 1.05rem;
   line-height: 1.75;
+}
+
+.contact-email-link {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.contact-email-link:hover,
+.contact-email-link:focus-visible {
+  opacity: 0.82;
+  outline: none;
+}
+
+.contact-email-label {
+  color: #fff;
+  font-family: 'Molgan', sans-serif;
+  font-size: 0.95rem;
+}
+
+.contact-email-address {
+  color: #c084fc;
 }
 
 .contact-form {
