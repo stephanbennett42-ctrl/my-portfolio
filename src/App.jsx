@@ -38,18 +38,21 @@ const featuredProjects = [
     description: 'Find trusted care for your pet, from daycare and boarding to grooming, all in one place so you can travel or work with peace of mind.',
     technologies: ['HTML', 'CSS', 'JavaScript'],
     type: 'Pet care platform',
+    repository: 'https://github.com/stephanbennett42-ctrl/Pawtopia.git',
   },
   {
     title: 'Modern Tech Solutions HR System',
     description: 'One secure HR hub for employee records, payroll, leave, and attendance, replacing scattered spreadsheets and emails with a database-backed system.',
     technologies: ['HTML', 'JavaScript', 'CSS'],
     type: 'HR management system',
+    repository: 'https://github.com/Newmi-Git/ModernTech-Solutions.git',
   },
   {
     title: 'ApplyDirect-SA',
     description: 'Find the right South African university or college faster. Explore courses and entry requirements, then filter your options in one streamlined guide.',
     technologies: ['Vue', 'JavaScript', 'CSS', 'HTML'],
     type: 'Education directory',
+    repository: 'https://github.com/stephanbennett42-ctrl/applydirect-sa.git',
   },
 ];
 
@@ -69,14 +72,41 @@ export default function App() {
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const [activeNavigationSection, setActiveNavigationSection] = useState('home');
   const aboutSectionRef = useRef(null);
+  const cosmicAtmosphereRef = useRef(null);
   const technicalStackRef = useRef(null);
   const featuredProjectsRef = useRef(null);
   const contactSectionRef = useRef(null);
   const contactFormRef = useRef(null);
   const projectSwipeStartRef = useRef(null);
+  const projectSwipeOccurredRef = useRef(false);
   const aboutDustCanvasRef = useRef(null);
   const aboutPortraitRef = useRef(null);
   const aboutAssetsReadyRef = useRef(Promise.resolve());
+
+  useEffect(() => {
+    const atmosphere = cosmicAtmosphereRef.current;
+    if (!atmosphere) return undefined;
+
+    let frame = 0;
+    const updateStarDrift = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const scrollOffset = window.scrollY;
+        atmosphere.style.setProperty('--cosmic-star-near', `${scrollOffset * 0.12}px`);
+        atmosphere.style.setProperty('--cosmic-star-far', `${scrollOffset * 0.045}px`);
+        atmosphere.style.setProperty('--cosmic-orbit-parallax', `${scrollOffset * -0.018}px`);
+        atmosphere.style.setProperty('--cosmic-orbit-parallax-reverse', `${scrollOffset * 0.009}px`);
+        frame = 0;
+      });
+    };
+
+    updateStarDrift();
+    window.addEventListener('scroll', updateStarDrift, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateStarDrift);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     if (!showInitialsIntro) return undefined;
@@ -109,6 +139,8 @@ export default function App() {
     const deltaX = event.clientX - start.x;
     const deltaY = event.clientY - start.y;
     if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    projectSwipeOccurredRef.current = true;
+    window.setTimeout(() => { projectSwipeOccurredRef.current = false; }, 0);
     moveProject(deltaX < 0 ? 1 : -1);
   };
 
@@ -452,8 +484,18 @@ export default function App() {
       `}</style>
 
       {/* Dynamic Background Ambient Lighting */}
-      <div className="fixed top-1/4 -right-20 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[140px] pointer-events-none" />
-      <div className="fixed bottom-1/3 -left-20 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="cosmic-nebula cosmic-nebula-one fixed top-1/4 -right-20 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="cosmic-nebula cosmic-nebula-two fixed bottom-1/3 -left-20 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div ref={cosmicAtmosphereRef} className="cosmic-atmosphere" aria-hidden="true">
+        <span className="cosmic-shooting-star cosmic-shooting-star-one" />
+        <span className="cosmic-shooting-star cosmic-shooting-star-two" />
+        <svg className="cosmic-spacecraft" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M44 7C31 10 21 20 16 34l-4 13 13-5C39 37 49 26 52 13l1-8-9 2Z" fill="#d9c4ff" fillOpacity="0.86" stroke="#f3eaff" strokeWidth="1.4" />
+          <circle cx="36" cy="25" r="5" fill="#4d3670" stroke="#a7fff1" strokeWidth="1.6" />
+          <path d="m15 39-8 2 8-11m2 14-2 8 11-8" fill="none" stroke="#c6a5f2" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+          <path d="m14 47-8 7 11-3" fill="#72eee0" fillOpacity="0.8" />
+        </svg>
+      </div>
 
       {/* Floating Pill Glass Navbar */}
       <div className="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 max-w-7xl mx-auto">
@@ -757,6 +799,22 @@ export default function App() {
                     ))}
                   </ul>
                 </div>
+                {project.repository && (
+                  <a
+                    className="featured-project-repository-link"
+                    href={project.repository}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open the ${project.title} GitHub repository`}
+                    tabIndex={isActive ? 0 : -1}
+                    onClick={(event) => {
+                      if (projectSwipeOccurredRef.current) event.preventDefault();
+                    }}
+                  />
+                )}
+                <span className="featured-project-card-cue" aria-hidden="true">
+                  <span className="featured-project-repository-pulse" />
+                </span>
               </article>
             );
           })}
